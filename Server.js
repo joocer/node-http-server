@@ -82,7 +82,7 @@ function fileHandler(method, page, body, cookies, response) {
 function dataHandler(method, page, body, cookies, response) {
 	console.log("dataHandler: " + page);
 	var pathname = url.parse(page).pathname;
-	pathname = 'C:/Node/CSDA/data/' + pathname.substr((~-pathname.lastIndexOf('/') >>> 0) + 2) + '.json';
+	pathname = '../data/' + pathname.substr((~-pathname.lastIndexOf('/') >>> 0) + 2) + '.json';
 	fs.readFile(pathname, function(err, data) {
 		if (err) {
 			response.writeHead(404, {'Content-Type': 'text/html'});
