@@ -52,7 +52,7 @@ function fileHandler(method, page, body, cookies, response) {
 		pathname = '/index.html';
 	}
 	pathname = '.' + pathname;
-	//console.log("fileHandler:path: " + pathname);
+	console.log("fileHandler:path: " + pathname);
 	fs.readFile(pathname, function(err, data) {
 		if (err) {
 			response.writeHead(404, {'Content-Type': 'text/html'});
@@ -79,45 +79,12 @@ function fileHandler(method, page, body, cookies, response) {
 	});
 }
 
-function dataHandler(method, page, body, cookies, response) {
-	console.log("dataHandler: " + page);
-	var pathname = url.parse(page).pathname;
-	pathname = '../data/' + pathname.substr((~-pathname.lastIndexOf('/') >>> 0) + 2) + '.json';
-	fs.readFile(pathname, function(err, data) {
-		if (err) {
-			response.writeHead(404, {'Content-Type': 'text/html'});
-			response.end();
-		}
-		else {
-			response.writeHead (200, {'Content-Type': 'application/json' });
-			response.write (data);
-			response.end();
-		}	
-	});
-}
-
-function storeHandler(method, page, body, cookies, response) {
-	console.log("storehandler:" + page);
-	var parts = url.parse(page).pathname.substr(5).split('/');
-
-	if (parts[0]=='releases') {
-		releasesHandler(method, page, body, cookies, response);
-	}
-	else if (parts[0]=='applications') {
-		applicationsHandler(method, page, body, cookies, response);
-	}
-	else {
-		response.writeHead(404, {'Content-Type': 'text/html'});
-		response.end();
-	}
-}
-
 // populates a page with values so javascript can access it
-function dynamicPageHandler(method, page, body, cookies, response) {
-	console.log("dynamicPageHandler: " + page);
+function pageHandler(method, page, body, cookies, response) {
+	console.log("pageHandler: " + page);
 
 	var pathname = url.parse(page).pathname;
-	pathname = '../wwwroot' + pathname;
+	pathname = '.' + pathname;
 
 	fs.readFile(pathname, "utf8", function(err, data) {
 		if (err) {
@@ -145,16 +112,8 @@ function nullHandler(method, page, body, cookies, response) {
 };
 
 function requestHandlerFactory(url, callback) {
-	if (url.toLowerCase().startsWith ('/data/')) {
-		callback(dataHandler);
-		return;
-	}
-	if (url.toLowerCase().startsWith ('/api/')) {
-		callback(storeHandler);
-		return;
-	}
 	if (url.toLowerCase().endsWith('.html')) {
-		callback(dynamicPageHandler);
+		callback(pageHandler);
 		return;
 	}
 
