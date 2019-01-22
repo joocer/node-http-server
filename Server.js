@@ -1,8 +1,6 @@
 const http = require('http');
 const fs = require('fs');
 const url = require('url');
-const net = require('net');
-const querystring = require('querystring');
 
 const debugmode = true;
 
@@ -14,38 +12,16 @@ http.createServer(function(request, response) {
 	});
 	request.on('end', function() {
 		if (debugmode) { console.log(request.method, request.url, "**", body, "**"); }
-		var cookieJar = parseCookies(request);
 		requestHandlerFactory(request.url, executeHandler);
 		function executeHandler(requestHandler) {
-			requestHandler(request.method.toLowerCase(), request.url.toLowerCase(), body, cookieJar, response);
+			requestHandler(request.method.toLowerCase(), request.url.toLowerCase(), body, response);
 		}
 	});
 }).listen(80);
 
 console.log('running - server');
 
-//-----------------------------------------------------------------------
-
-String.prototype.replaceAll = function(search, replacement) {
-    var target = this;
-    return target.replace(new RegExp(search, 'g'), replacement);
-};
-
-//-----------------------------------------------------------------------
-
-function parseCookies (request) {
-	var cookieJar = {};
-	var cookieDough = request.headers.cookie;
-
-	cookieDough && cookieDough.split(';').forEach(function(cookie) {
-        	var parts = cookie.split('=');
-        	cookieJar[parts.shift().trim()] = decodeURI(parts.join('='));
-    	});
-
-    	return cookieJar;
-}
-
-function fileHandler(method, page, body, cookies, response) {
+function fileHandler(method, page, body, response) {
 	console.log("fileHandler: " + page);
 	var pathname = url.parse(page).pathname;
 	if (pathname == '/') {
@@ -79,8 +55,7 @@ function fileHandler(method, page, body, cookies, response) {
 	});
 }
 
-// populates a page with values so javascript can access it
-function pageHandler(method, page, body, cookies, response) {
+function pageHandler(method, page, body, response) {
 	console.log("pageHandler: " + page);
 
 	var pathname = url.parse(page).pathname;
@@ -93,18 +68,13 @@ function pageHandler(method, page, body, cookies, response) {
 		}
 		else {
 			response.writeHead (200, {'Content-Type': 'text/html'});
-			var dataItems = querystring.parse(body);
-			for(var dataItem in dataItems){
-				data = data.replaceAll('%' + dataItem + '%', dataItems[dataItem]);
-			}
-			data = data.replace(/%.*%/g, '')
 			response.write (data);
 			response.end();
 		}	
 	});
 };
 
-function nullHandler(method, page, body, cookies, response) {
+function nullHandler(method, page, body, response) {
 	console.log("nullhandler:" + page);
 	response.writeHead(500);
 	response.end();	
